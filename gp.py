@@ -19,38 +19,46 @@ def get_next_gopro_number(directory):
     # Return the next available number, which is the maximum number + 1
     return max(gopro_numbers, default=0) + 1
 
-def rename_files(directory):
+def rename_and_move_files(source_directory, destination_directory):
+    # Ensure the destination folder exists
+    if not os.path.exists(destination_directory):
+        os.makedirs(destination_directory)
+    
     # Get the next available GOPR number
-    next_number = get_next_gopro_number(directory)
+    next_number = get_next_gopro_number(destination_directory)
     
     # Monitor the directory for new files
-    print("Monitoring the directory for new files. Press Ctrl+C to stop.")
+    print(f"Monitoring the directory for new files. Press Ctrl+C to stop.")
+    print(f"Renamed files will be moved to: {destination_directory}")
+    
     while True:
-        # List all files in the directory
-        files = os.listdir(directory)
+        # List all files in the source directory
+        files = os.listdir(source_directory)
 
         # Filter for MP4 files that don't start with 'GOPR'
         new_files = [f for f in files if f.lower().endswith('.mp4') and not f.lower().startswith('gopr')]
         
         for file in new_files:
             # Build the full file path
-            file_path = os.path.join(directory, file)
+            source_path = os.path.join(source_directory, file)
             
             # Create the new file name
             new_file_name = f"GOPR{next_number:04d}.mp4"
-            new_file_path = os.path.join(directory, new_file_name)
+            destination_path = os.path.join(destination_directory, new_file_name)
             
-            # Rename the file
+            # Rename and move the file
             try:
-                os.rename(file_path, new_file_path)
-                print(f"Renamed file: {file} -> {new_file_name}")
+                os.rename(source_path, destination_path)
+                print(f"Renamed and moved file: {file} -> {new_file_name}")
                 next_number += 1  # Increment the GOPR number
             except Exception as e:
-                print(f"Error renaming file: {file} -> {new_file_name}. Error: {e}")
+                print(f"Error renaming and moving file: {file} -> {new_file_name}. Error: {e}")
         
         # Wait for a short period before checking again (to avoid too frequent checks)
         time.sleep(1)
 
-# Specify the directory where the MP4 files are located
-directory = r"C:\Users\harry\Videos\Screen Recordings\MP4"
-rename_files(directory)
+# Specify the source and destination directories
+source_directory = r"C:\Users\harry\Videos\Screen Recordings\MP4"
+destination_directory = r"C:\Users\harry\Videos\Screen Recordings\Renamed"
+
+rename_and_move_files(source_directory, destination_directory)
